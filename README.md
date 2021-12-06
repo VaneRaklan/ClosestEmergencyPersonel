@@ -10,7 +10,9 @@ https://vaneraklan.github.io/ClosestEmergencyPersonel
 
 == Screenshots ==
 == main functions ==
-== data sources ==
+[Police Station Data](https://data.seattle.gov/dataset/Police-Stations/yfpf-qbei)
+[Fire Station Data](https://data.seattle.gov/dataset/Fire-Stations/jamt-dvzr)
+[Hospital Data](https://data.seattle.gov/dataset/Hospitals/x6vc-2g3e)
 == applied libraries ==
 == other informative pieces ==
 == acknowledgemnts ==
