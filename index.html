@@ -58,21 +58,16 @@
                 if (!policeFeatures.length) {
                     return;
                 }
-
                 const policeFeature = policeFeatures[0];
-
                 const nearestHospital = turf.nearest(policeFeature, hospitals);
-
                 if (nearestHospital === null) return;
                 map.getSource('nearest-hospital').setData({
                     'type': 'FeatureCollection',
                     'features': [nearestHospital]
                 });
-
                 if (map.getLayer('nearest-hospital')) {
                     map.removeLayer('nearest-hospital');
                 }
-
                 map.addLayer({
                         id: 'nearest-hospital',
                         type: 'circle',
@@ -85,6 +80,67 @@
                     'hospital-layer'
                 );
             }
+
+            function nearbyFire(event) {
+                const hospitalFeatures = map.queryRenderedFeatures(event.point, {
+                    layers: ['hospital-layer']
+                });
+                if (!hospitalFeatures.length) {
+                    return;
+                }
+                const hospitalFeature = hospitalFeatures[0];
+                const nearestFire = turf.nearest(hospitalFeature, fireStations);
+                if (nearestFire === null) return;
+                map.getSource('nearest-fire').setData({
+                    'type': 'FeatureCollection',
+                    'features': [nearestFire]
+                });
+                if (map.getLayer('nearest-fire')) {
+                    map.removeLayer('nearest-fire');
+                }
+                map.addLayer({
+                        id: 'nearest-fire',
+                        type: 'circle',
+                        source: 'nearest-fire',
+                        paint: {
+                            'circle-radius': 12,
+                            'circle-color': '#ff2133'
+                        }
+                    },
+                    'fire-layer'
+                );
+            }
+
+            function nearbyPolice(event) {
+                const fireFeatures = map.queryRenderedFeatures(event.point, {
+                    layers: ['fire-layer']
+                });
+                if (!fireFeatures.length) {
+                    return;
+                }
+                const fireFeature = fireFeatures[0];
+                const nearestPolice = turf.nearest(fireFeature, policeStations);
+                if (nearestPolice === null) return;
+                map.getSource('nearest-police').setData({
+                    'type': 'FeatureCollection',
+                    'features': [nearestPolice]
+                });
+                if (map.getLayer('nearest-police')) {
+                    map.removeLayer('nearest-police');
+                }
+                map.addLayer({
+                        id: 'nearest-police',
+                        type: 'circle',
+                        source: 'nearest-police',
+                        paint: {
+                            'circle-radius': 12,
+                            'circle-color': '#51ff21'
+                        }
+                    },
+                    'police-layer'
+                );
+            }
+
             map.on('load', function loadingData() {
                 // police station related
                 map.addSource('police', {
@@ -184,8 +240,24 @@
                         features: []
                     }
                 });
+                map.addSource('nearest-fire', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: []
+                    }
+                });
+                map.addSource('nearest-police', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: []
+                    }
+                });
                 map.on('click', (event) => {
                     nearbyHospital(event);
+                    nearbyFire(event);
+                    nearbyPolice(event);
                 });
             });
         }
