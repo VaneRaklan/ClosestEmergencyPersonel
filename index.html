@@ -27,19 +27,27 @@
             <h4 class='txt-m txt-bold mb6'>Choose a travel mode:</h4>
             <div class='mb12 mr12 toggle-group align-center'>
                 <label class='toggle-container'>
-                    <input name='profile' type='radio' value='walking'>
+                    <input id="walking" name='profile' type='radio' value='walking'>
                     <div class='toggle toggle--active-null toggle--null'>Walking</div>
                 </label>
                 <label class='toggle-container'>
-                    <input name='profile' type='radio' value='cycling' checked>
+                    <input id="cycling" name='profile' type='radio' value='cycling' checked>
                     <div class='toggle toggle--active-null toggle--null'>Cycling</div>
                 </label>
                 <label class='toggle-container'>
-                    <input name='profile' type='radio' value='driving'>
+                    <input id="driving" name='profile' type='radio' value='driving'>
                     <div class='toggle toggle--active-null toggle--null'>Driving</div>
                 </label>
             </div>
         </form>
+        <h3>Fire Station</h3>
+        <p id='fireDesc'></p>
+        <br>
+        <h3>Police Station</h3>
+        <p id='policeDesc'></p>
+        <br>
+        <h3>Hospital</h3>
+        <p id='hospitalDesc'></p>
     </div>
     <script>
         mapboxgl.accessToken =
@@ -69,7 +77,7 @@
             // an arbitrary start will always be the same
             // only the end or destination will change
             const query = await fetch(
-                `https://api.mapbox.com/directions/v5/mapbox/cycling/${start[0]},${start[1]};${end[0]},${end[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`, {
+                `https://api.mapbox.com/directions/v5/mapbox/${document.querySelector('input[name="profile"]:checked').value}/${start[0]},${start[1]};${end[0]},${end[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`, {
                     method: 'GET'
                 }
             );
@@ -109,6 +117,13 @@
                 });
             }
             // add turn instructions here at the end
+            if (routeName == 'fire-route') {
+                document.getElementById('fireDesc').innerHTML = (data.duration / 60).toFixed(2) + ' minutes';
+            } else if (routeName == 'police-route') {
+                document.getElementById('policeDesc').innerHTML = (data.duration / 60).toFixed(2) + ' minutes';
+            } else if (routeName == 'hospital-route') {
+                document.getElementById('hospitalDesc').innerHTML = (data.duration / 60).toFixed(2) + ' minutes';
+            }
         }
 
         async function geojsonFetch() {
