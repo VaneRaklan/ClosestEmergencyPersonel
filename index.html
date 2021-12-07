@@ -137,46 +137,18 @@
             response = await fetch('data/Seattle_City_Limits.geojson');
             seattle = await response.json();
 
-            function nearbyHospital(event, clicked = false) {
-                let nearestHospital;
-                if (clicked) {
-                    let click_feature = {
-                        type: 'Feature',
-                        geometry: {
-                            coordinates: [event.lngLat.lng, event.lngLat.lat],
-                            type: "Point"
-                        }
-                    }
-                    nearestHospital = turf.nearest(click_feature, hospitals);
-                    getRoute(click_feature.geometry.coordinates, nearestHospital.geometry.coordinates, 'hospital-route');
-                } else {
-                    nearestHospital = turf.nearest(event.result, hospitals);
-                    getRoute(event.result.geometry.coordinates, nearestHospital.geometry.coordinates, 'hospital-route');
-                }
+            // personelName can be one of the following: fire, police, hospital
+            function nearbyPersonel(event, personelName, clicked = false) {
+                let nearestPersonel, personelFeatures;
                 
-                if (nearestHospital === null) return;
-                map.getSource('nearest-hospital').setData({
-                    'type': 'FeatureCollection',
-                    'features': [nearestHospital]
-                });
-                if (map.getLayer('nearest-hospital')) {
-                    map.removeLayer('nearest-hospital');
+                if (personelName == 'fire') {
+                    personelFeatures = fireStations;
+                } else if (personelName == 'police') {
+                    personelFeatures = policeStations;
+                } else if (personelName == 'hospital') {
+                    personelFeatures = hospitals;
                 }
-                map.addLayer({
-                        id: 'nearest-hospital',
-                        type: 'circle',
-                        source: 'nearest-hospital',
-                        paint: {
-                            'circle-radius': 15,
-                            'circle-color': '#51ff21'
-                        }
-                    },
-                    'hospital-layer'
-                );
-            }
 
-            function nearbyFire(event, clicked = false) {
-                let nearestFire;
                 if (clicked) {
                     let click_feature = {
                         type: 'Feature',
@@ -185,70 +157,32 @@
                             type: "Point"
                         }
                     }
-                    nearestFire = turf.nearest(click_feature, fireStations);
-                    getRoute(click_feature.geometry.coordinates, nearestFire.geometry.coordinates, 'fire-route');
-
+                    nearestPersonel = turf.nearest(click_feature, personelFeatures);
+                    getRoute(click_feature.geometry.coordinates, nearestPersonel.geometry.coordinates, personelName + '-route');
                 } else {
-                    nearestFire = turf.nearest(event.result, fireStations);
-                    getRoute(event.result.geometry.coordinates, nearestFire.geometry.coordinates, 'fire-route');
+                    nearestPersonel = turf.nearest(event.result, personelFeatures);
+                    getRoute(event.result.geometry.coordinates, nearestPersonel.geometry.coordinates, personelName + '-route');
                 }
-                if (nearestFire === null) return;
-                map.getSource('nearest-fire').setData({
+
+
+                if (nearestPersonel === null) return;
+                map.getSource('nearest-' + personelName).setData({
                     'type': 'FeatureCollection',
-                    'features': [nearestFire]
+                    'features': [nearestPersonel]
                 });
-                if (map.getLayer('nearest-fire')) {
-                    map.removeLayer('nearest-fire');
+                if (map.getLayer('nearest-' + personelName)) {
+                    map.removeLayer('nearest-' + personelName);
                 }
                 map.addLayer({
-                        id: 'nearest-fire',
+                        id: 'nearest-' + personelName,
                         type: 'circle',
-                        source: 'nearest-fire',
-                        paint: {
-                            'circle-radius': 15,
-                            'circle-color': '#ff0303'
-                        }
-                    },
-                    'fire-layer'
-                );
-            }
-
-            function nearbyPolice(event, clicked = false) {
-                let nearestPolice;
-                if (clicked) {
-                    let click_feature = {
-                        type: 'Feature',
-                        geometry: {
-                            coordinates: [event.lngLat.lng, event.lngLat.lat],
-                            type: "Point"
-                        }
-                    }
-                    nearestPolice = turf.nearest(click_feature, policeStations);
-                    getRoute(click_feature.geometry.coordinates, nearestPolice.geometry.coordinates, 'police-route');
-                } else {
-                    nearestPolice = turf.nearest(event.result, policeStations);
-                    getRoute(event.result.geometry.coordinates, nearestPolice.geometry.coordinates, 'police-route');
-                }
-
-
-                if (nearestPolice === null) return;
-                map.getSource('nearest-police').setData({
-                    'type': 'FeatureCollection',
-                    'features': [nearestPolice]
-                });
-                if (map.getLayer('nearest-police')) {
-                    map.removeLayer('nearest-police');
-                }
-                map.addLayer({
-                        id: 'nearest-police',
-                        type: 'circle',
-                        source: 'nearest-police',
+                        source: 'nearest-' + personelName,
                         paint: {
                             'circle-radius': 15,
                             'circle-color': '#00d9ff'
                         }
                     },
-                    'police-layer'
+                    personelName + '-layer'
                 );
             }
 
@@ -342,9 +276,9 @@
                 //  Add a marker at the result's coordinates
                 geocoder.on('result', (event) => {
                     map.getSource('single-point').setData(event.result.geometry);
-                    nearbyPolice(event);
-                    nearbyHospital(event);
-                    nearbyFire(event);
+                    nearbyPersonel(event, 'hospital');
+                    nearbyPersonel(event, 'fire');
+                    nearbyPersonel(event, 'police');
                 });
 
                 map.addSource('nearest-hospital', {
@@ -374,9 +308,9 @@
                         type: "Point"
                     };
                     map.getSource('single-point').setData(click_geometry);
-                    nearbyHospital(event, true);
-                    nearbyFire(event, true);
-                    nearbyPolice(event, true);
+                    nearbyPersonel(event, 'hospital', true);
+                    nearbyPersonel(event, 'fire', true);
+                    nearbyPersonel(event, 'police', true);
                 });
             });
         }
