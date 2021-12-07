@@ -3,11 +3,16 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Demo: Analyze data with Turf.js and Mapbox GL JS</title>
+    <title>Closest Emergency Personel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
     <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet" />
     <script src="https://api.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js'>
+    </script>
+    <link rel='stylesheet'
+        href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css'
+        type='text/css' />
     <link rel="stylesheet" href="css/index.css">
 </head>
 
@@ -20,8 +25,20 @@
             container: 'map', // container id
             style: 'mapbox://styles/mapbox/light-v10', // stylesheet location
             center: [-122.3321, 47.6062], // starting position
-            zoom: 12 // starting zoom
+            zoom: 10.5 // starting zoom
         });
+
+        const geocoder = new MapboxGeocoder({
+            // Initialize the geocoder
+            accessToken: mapboxgl.accessToken, // Set the access token
+            mapboxgl: mapboxgl, // Set the mapbox-gl instance
+            marker: false, // Do not use the default marker style
+            bbox: [-122.43576049804688, 47.495835372879085, -122.24349975585938, 47.73407043589588],
+            placeholder: 'Search for places in Seattle'
+        });
+
+        // Add the geocoder to the map
+        map.addControl(geocoder);
 
         async function geojsonFetch() {
             let response, policeStations, fireStations, hospitals, seattle;
@@ -34,6 +51,40 @@
             response = await fetch('data/Seattle_City_Limits.geojson');
             seattle = await response.json();
 
+            function nearbyHospital(event) {
+                const policeFeatures = map.queryRenderedFeatures(event.point, {
+                    layers: ['police-layer']
+                });
+                if (!policeFeatures.length) {
+                    return;
+                }
+
+                const policeFeature = policeFeatures[0];
+
+                const nearestHospital = turf.nearest(policeFeature, hospitals);
+
+                if (nearestHospital === null) return;
+                map.getSource('nearest-hospital').setData({
+                    'type': 'FeatureCollection',
+                    'features': [nearestHospital]
+                });
+
+                if (map.getLayer('nearest-hospital')) {
+                    map.removeLayer('nearest-hospital');
+                }
+
+                map.addLayer({
+                        id: 'nearest-hospital',
+                        type: 'circle',
+                        source: 'nearest-hospital',
+                        paint: {
+                            'circle-radius': 12,
+                            'circle-color': '#486DE0'
+                        }
+                    },
+                    'hospital-layer'
+                );
+            }
             map.on('load', function loadingData() {
                 // police station related
                 map.addSource('police', {
@@ -43,14 +94,14 @@
 
                 map.addLayer({
                     'id': 'police-layer',
-                    'type': 'circle',
+                    'type': 'symbol',
                     'source': 'police',
-                    'paint': {
-                        'circle-radius': 8,
-                        'circle-stroke-width': 2,
-                        'circle-color': 'blue',
-                        'circle-stroke-color': 'white'
-                    }
+                    'layout': {
+                        'icon-image': 'police-15',
+                        'icon-allow-overlap': true,
+                        'icon-size': 1.5
+                    },
+                    'paint': {}
                 });
 
                 // fire station related
@@ -61,14 +112,14 @@
 
                 map.addLayer({
                     'id': 'fire-layer',
-                    'type': 'circle',
+                    'type': 'symbol',
                     'source': 'fire',
-                    'paint': {
-                        'circle-radius': 8,
-                        'circle-stroke-width': 2,
-                        'circle-color': 'red',
-                        'circle-stroke-color': 'white'
-                    }
+                    'layout': {
+                        'icon-image': 'fire-station-15',
+                        'icon-allow-overlap': true,
+                        'icon-size': 1.25
+                    },
+                    'paint': {}
                 });
                 // hospital related
                 map.addSource('hospital', {
@@ -78,14 +129,14 @@
 
                 map.addLayer({
                     'id': 'hospital-layer',
-                    'type': 'circle',
+                    'type': 'symbol',
                     'source': 'hospital',
-                    'paint': {
-                        'circle-radius': 8,
-                        'circle-stroke-width': 2,
-                        'circle-color': 'green',
-                        'circle-stroke-color': 'white'
-                    }
+                    'layout': {
+                        'icon-image': 'hospital-15',
+                        'icon-allow-overlap': true,
+                        'icon-size': 1.25
+                    },
+                    'paint': {}
                 });
                 // city limits related
                 map.addSource('seattle', {
@@ -100,6 +151,41 @@
                     'paint': {
                         'line-color': 'black'
                     }
+                });
+
+                // geocoder
+                map.addSource('single-point', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: []
+                    }
+                });
+
+                map.addLayer({
+                    id: 'point',
+                    source: 'single-point',
+                    type: 'circle',
+                    paint: {
+                        'circle-radius': 10,
+                        'circle-color': '#448ee4'
+                    }
+                });
+                // Listen for the `result` event from the Geocoder // `result` event is triggered when a user makes a selection
+                //  Add a marker at the result's coordinates
+                geocoder.on('result', (event) => {
+                    map.getSource('single-point').setData(event.result.geometry);
+                });
+
+                map.addSource('nearest-hospital', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: []
+                    }
+                });
+                map.on('click', (event) => {
+                    nearbyHospital(event);
                 });
             });
         }
