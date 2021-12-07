@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Demo: Analyze data with Turf.js and Mapbox GL JS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js"></script>
+    <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+    <div id="map"></div>
+    <script>
+        mapboxgl.accessToken =
+            'pk.eyJ1IjoidmFuZXJha2xhbiIsImEiOiJja3ZiZWJrb3hhbWViMnZuejhqc2hibWd0In0.qfRk8AfEWmxrNk4zvDUtJw';
+        let map = new mapboxgl.Map({
+            container: 'map', // container id
+            style: 'mapbox://styles/mapbox/light-v10', // stylesheet location
+            center: [-122.3321, 47.6062], // starting position
+            zoom: 12 // starting zoom
+        });
+
+        async function geojsonFetch() {
+            let response, policeStations, fireStations, hospitals, seattle;
+            response = await fetch('data/Police_Stations.geojson');
+            policeStations = await response.json();
+            response = await fetch('data/Fire_Stations.geojson');
+            fireStations = await response.json();
+            response = await fetch('data/Hospitals.geojson');
+            hospitals = await response.json();
+            response = await fetch('data/Seattle_City_Limits.geojson');
+            seattle = await response.json();
+
+            map.on('load', function loadingData() {
+                // police station related
+                map.addSource('police', {
+                    type: 'geojson',
+                    data: policeStations
+                });
+
+                map.addLayer({
+                    'id': 'police-layer',
+                    'type': 'circle',
+                    'source': 'police',
+                    'paint': {
+                        'circle-radius': 8,
+                        'circle-stroke-width': 2,
+                        'circle-color': 'blue',
+                        'circle-stroke-color': 'white'
+                    }
+                });
+
+                // fire station related
+                map.addSource('fire', {
+                    type: 'geojson',
+                    data: fireStations
+                });
+
+                map.addLayer({
+                    'id': 'fire-layer',
+                    'type': 'circle',
+                    'source': 'fire',
+                    'paint': {
+                        'circle-radius': 8,
+                        'circle-stroke-width': 2,
+                        'circle-color': 'red',
+                        'circle-stroke-color': 'white'
+                    }
+                });
+                // hospital related
+                map.addSource('hospital', {
+                    type: 'geojson',
+                    data: hospitals
+                });
+
+                map.addLayer({
+                    'id': 'hospital-layer',
+                    'type': 'circle',
+                    'source': 'hospital',
+                    'paint': {
+                        'circle-radius': 8,
+                        'circle-stroke-width': 2,
+                        'circle-color': 'green',
+                        'circle-stroke-color': 'white'
+                    }
+                });
+                // city limits related
+                map.addSource('seattle', {
+                    type: 'geojson',
+                    data: seattle
+                });
+
+                map.addLayer({
+                    'id': 'seattle-layer',
+                    'type': 'line',
+                    'source': 'seattle',
+                    'paint': {
+                        'line-color': 'black'
+                    }
+                });
+            });
+        }
+        geojsonFetch();
+    </script>
+</body>
+
+</html>

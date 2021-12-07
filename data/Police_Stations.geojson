@@ -1,0 +1,13 @@
+{
+"type": "FeatureCollection",
+"name": "Police_Stations",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "OBJECTID": 1, "NAME": "East Precinct", "PRECINCT": "E", "ADDR": " 1519 12TH AVE", "EOC_ID": 2, "SE_ANNO_CAD_DATA": null }, "geometry": { "type": "Point", "coordinates": [ -122.317119417426682, 47.614944684354754 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 2, "NAME": "North Precinct", "PRECINCT": "N", "ADDR": "10049 COLLEGE WAY N", "EOC_ID": 3, "SE_ANNO_CAD_DATA": null }, "geometry": { "type": "Point", "coordinates": [ -122.334706544628105, 47.702928626924354 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 3, "NAME": "Southeast Precinct", "PRECINCT": "SE", "ADDR": " 3001 S MYRTLE ST", "EOC_ID": 4, "SE_ANNO_CAD_DATA": null }, "geometry": { "type": "Point", "coordinates": [ -122.293355800935501, 47.538574255627125 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 4, "NAME": "West Precinct", "PRECINCT": "W", "ADDR": "  810 VIRGINIA ST", "EOC_ID": 1, "SE_ANNO_CAD_DATA": null }, "geometry": { "type": "Point", "coordinates": [ -122.336590683930012, 47.615921370122827 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 5, "NAME": "Police HQ", "PRECINCT": "HQ", "ADDR": "  610 5TH AVE", "EOC_ID": 144221, "SE_ANNO_CAD_DATA": null }, "geometry": { "type": "Point", "coordinates": [ -122.329188575330278, 47.604205654838353 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 6, "NAME": "Southwest Precinct", "PRECINCT": "SW", "ADDR": " 2300 SW WEBSTER ST", "EOC_ID": 0, "SE_ANNO_CAD_DATA": null }, "geometry": { "type": "Point", "coordinates": [ -122.362016496059155, 47.535895141226639 ] } }
+]
+}
