@@ -51,15 +51,20 @@
             response = await fetch('data/Seattle_City_Limits.geojson');
             seattle = await response.json();
 
-            function nearbyHospital(event) {
-                const policeFeatures = map.queryRenderedFeatures(event.point, {
-                    layers: ['police-layer']
-                });
-                if (!policeFeatures.length) {
-                    return;
+            function nearbyHospital(event, clicked = false) {
+                let nearestHospital;
+                if (clicked) {
+                    let click_geometry = {
+                        type: 'Feature',
+                        geometry: {
+                            coordinates: [event.lngLat.lng, event.lngLat.lat],
+                            type:"Point"
+                        }
+                    }
+                    nearestHospital = turf.nearest(click_geometry, hospitals)
+                } else {
+                    nearestHospital = turf.nearest(event.result, hospitals);
                 }
-                const policeFeature = policeFeatures[0];
-                const nearestHospital = turf.nearest(policeFeature, hospitals);
                 if (nearestHospital === null) return;
                 map.getSource('nearest-hospital').setData({
                     'type': 'FeatureCollection',
@@ -81,15 +86,20 @@
                 );
             }
 
-            function nearbyFire(event) {
-                const hospitalFeatures = map.queryRenderedFeatures(event.point, {
-                    layers: ['hospital-layer']
-                });
-                if (!hospitalFeatures.length) {
-                    return;
+            function nearbyFire(event, clicked = false) {
+                let nearestFire;
+                if (clicked) {
+                    let click_geometry = {
+                        type: 'Feature',
+                        geometry: {
+                            coordinates: [event.lngLat.lng, event.lngLat.lat],
+                            type:"Point"
+                        }
+                    }
+                    nearestFire = turf.nearest(click_geometry, fireStations)
+                } else {
+                    nearestFire = turf.nearest(event.result, fireStations);
                 }
-                const hospitalFeature = hospitalFeatures[0];
-                const nearestFire = turf.nearest(hospitalFeature, fireStations);
                 if (nearestFire === null) return;
                 map.getSource('nearest-fire').setData({
                     'type': 'FeatureCollection',
@@ -111,15 +121,22 @@
                 );
             }
 
-            function nearbyPolice(event) {
-                const fireFeatures = map.queryRenderedFeatures(event.point, {
-                    layers: ['fire-layer']
-                });
-                if (!fireFeatures.length) {
-                    return;
+            function nearbyPolice(event, clicked = false) {
+                let nearestPolice;
+                if (clicked) {
+                    let click_geometry = {
+                        type: 'Feature',
+                        geometry: {
+                            coordinates: [event.lngLat.lng, event.lngLat.lat],
+                            type:"Point"
+                        }
+                    }
+                    nearestPolice = turf.nearest(click_geometry, policeStations)
+                } else {
+                    nearestPolice = turf.nearest(event.result, policeStations);
                 }
-                const fireFeature = fireFeatures[0];
-                const nearestPolice = turf.nearest(fireFeature, policeStations);
+                
+                
                 if (nearestPolice === null) return;
                 map.getSource('nearest-police').setData({
                     'type': 'FeatureCollection',
@@ -231,6 +248,9 @@
                 //  Add a marker at the result's coordinates
                 geocoder.on('result', (event) => {
                     map.getSource('single-point').setData(event.result.geometry);
+                    nearbyPolice(event);
+                    nearbyHospital(event);
+                    nearbyFire(event);
                 });
 
                 map.addSource('nearest-hospital', {
@@ -255,9 +275,14 @@
                     }
                 });
                 map.on('click', (event) => {
-                    nearbyHospital(event);
-                    nearbyFire(event);
-                    nearbyPolice(event);
+                    let click_geometry = {
+                         coordinates: [event.lngLat.lng, event.lngLat.lat],
+                         type:"Point"
+                    };
+                    map.getSource('single-point').setData(click_geometry);
+                    nearbyHospital(event, true);
+                    nearbyFire(event, true);
+                    nearbyPolice(event, true);
                 });
             });
         }
