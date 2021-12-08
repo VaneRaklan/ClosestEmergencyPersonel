@@ -31,11 +31,11 @@
                     <div class='toggle toggle--active-null toggle--null'>Walking</div>
                 </label>
                 <label class='toggle-container'>
-                    <input id="cycling" name='profile' type='radio' value='cycling' checked>
+                    <input id="cycling" name='profile' type='radio' value='cycling'>
                     <div class='toggle toggle--active-null toggle--null'>Cycling</div>
                 </label>
                 <label class='toggle-container'>
-                    <input id="driving" name='profile' type='radio' value='driving'>
+                    <input id="driving" name='profile' type='radio' value='driving' checked>
                     <div class='toggle toggle--active-null toggle--null'>Driving</div>
                 </label>
             </div>
@@ -72,7 +72,7 @@
         // Add the geocoder to the map
         map.addControl(geocoder);
 
-        async function getRoute(start, end, routeName) {
+        async function getRoute(start, end, personelName) {
             // make a directions request using cycling profile
             // an arbitrary start will always be the same
             // only the end or destination will change
@@ -93,13 +93,13 @@
                 }
             };
             // if the route already exists on the map, we'll reset it using setData
-            if (map.getSource(routeName)) {
-                map.getSource(routeName).setData(geojson);
+            if (map.getSource(personelName + '-route')) {
+                map.getSource(personelName + '-route').setData(geojson);
             }
             // otherwise, we'll make a new request
             else {
                 map.addLayer({
-                    id: routeName,
+                    id: personelName + '-route',
                     type: 'line',
                     source: {
                         type: 'geojson',
@@ -110,43 +110,39 @@
                         'line-cap': 'round'
                     },
                     paint: {
-                        'line-color': '#ff002f',
+                        'line-color': 'white',
                         'line-width': 5,
-                        'line-opacity': 0.75
+                        'line-opacity': 1
                     }
                 });
             }
-            // add turn instructions here at the end
-            if (routeName == 'fire-route') {
-                document.getElementById('fireDesc').innerHTML = (data.duration / 60).toFixed(2) + ' minutes';
-            } else if (routeName == 'police-route') {
-                document.getElementById('policeDesc').innerHTML = (data.duration / 60).toFixed(2) + ' minutes';
-            } else if (routeName == 'hospital-route') {
-                document.getElementById('hospitalDesc').innerHTML = (data.duration / 60).toFixed(2) + ' minutes';
-            }
+            // add estimated travel times to the sidepanel
+            document.getElementById(personelName + 'Desc').innerHTML = (data.duration / 60).toFixed(2) + ' minutes away';
+
         }
 
         async function geojsonFetch() {
-            let response, policeStations, fireStations, hospitals, seattle;
+            let response, policeStations, fireStations, hospitals;
             response = await fetch('data/Police_Stations.geojson');
             policeStations = await response.json();
             response = await fetch('data/Fire_Stations.geojson');
             fireStations = await response.json();
             response = await fetch('data/Hospitals.geojson');
             hospitals = await response.json();
-            response = await fetch('data/Seattle_City_Limits.geojson');
-            seattle = await response.json();
 
             // personelName can be one of the following: fire, police, hospital
             function nearbyPersonel(event, personelName, clicked = false) {
-                let nearestPersonel, personelFeatures;
+                let nearestPersonel, personelFeatures, highlightColor;
                 
                 if (personelName == 'fire') {
                     personelFeatures = fireStations;
+                    highlightColor = '#ff002f';
                 } else if (personelName == 'police') {
                     personelFeatures = policeStations;
+                    highlightColor = '#00fbff';
                 } else if (personelName == 'hospital') {
                     personelFeatures = hospitals;
+                    highlightColor = '#00ff1a';
                 }
 
                 if (clicked) {
@@ -158,10 +154,10 @@
                         }
                     }
                     nearestPersonel = turf.nearest(click_feature, personelFeatures);
-                    getRoute(click_feature.geometry.coordinates, nearestPersonel.geometry.coordinates, personelName + '-route');
+                    getRoute(click_feature.geometry.coordinates, nearestPersonel.geometry.coordinates, personelName);
                 } else {
                     nearestPersonel = turf.nearest(event.result, personelFeatures);
-                    getRoute(event.result.geometry.coordinates, nearestPersonel.geometry.coordinates, personelName + '-route');
+                    getRoute(event.result.geometry.coordinates, nearestPersonel.geometry.coordinates, personelName);
                 }
 
 
@@ -179,7 +175,7 @@
                         source: 'nearest-' + personelName,
                         paint: {
                             'circle-radius': 15,
-                            'circle-color': '#00d9ff'
+                            'circle-color': highlightColor
                         }
                     },
                     personelName + '-layer'
@@ -222,6 +218,7 @@
                     },
                     'paint': {}
                 });
+
                 // hospital related
                 map.addSource('hospital', {
                     type: 'geojson',
@@ -239,20 +236,6 @@
                     },
                     'paint': {}
                 });
-                // city limits related
-                map.addSource('seattle', {
-                    type: 'geojson',
-                    data: seattle
-                });
-
-                map.addLayer({
-                    'id': 'seattle-layer',
-                    'type': 'line',
-                    'source': 'seattle',
-                    'paint': {
-                        'line-color': 'black'
-                    }
-                });
 
                 // geocoder
                 map.addSource('single-point', {
@@ -269,9 +252,10 @@
                     type: 'circle',
                     paint: {
                         'circle-radius': 13,
-                        'circle-color': '#ff03c4'
+                        'circle-color': '#ff7f00'
                     }
                 });
+
                 // Listen for the `result` event from the Geocoder // `result` event is triggered when a user makes a selection
                 //  Add a marker at the result's coordinates
                 geocoder.on('result', (event) => {
