@@ -8,9 +8,34 @@ h3 {
     font-size: 20px;
 }
 
+#param-header {
+    font-size: 20px;
+}
+
 #map {
     position: absolute;
     top: 0;
     bottom: 0;
     width: 100%;
+}
+
+#sidepanel {
+    max-width: 25vw;
+}
+
+#walking-text, #cycling-text, #driving-text {
+    font-size: 20px;
+}
+
+#fireDesc, #policeDesc, #hospitalDesc {
+    font-size: 20px;
+}
+
+#greeting {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+#intro {
+    font-size: 20px;
 }

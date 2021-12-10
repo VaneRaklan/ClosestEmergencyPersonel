@@ -22,24 +22,33 @@
 
 <body>
     <div id="map"></div>
-    <div class='absolute fl my24 mx24 py24 px24 bg-gray-faint round'>
+    <div id="sidepanel" class='absolute fl my24 mx24 py24 px24 bg-gray-faint round'>
+        <h2 id="greeting">Welcome!</h2>
+        <br>
+        <p id="intro">Click anywhere on the map or use the search bar to place a marker and the
+            application will highlight the closest police station, fire station, and
+            hospital. On top of that, the routes to each of them will be highlighted
+            and their travel times will be populated in this side panel.
+        </p>
+        <br>
         <form id='params'>
-            <h4 class='txt-m txt-bold mb6'>Choose a travel mode:</h4>
+            <h4 id="param-header" class='txt-m txt-bold mb6'>Choose a travel mode:</h4>
             <div class='mb12 mr12 toggle-group align-center'>
                 <label class='toggle-container'>
                     <input id="walking" name='profile' type='radio' value='walking'>
-                    <div class='toggle toggle--active-null toggle--null'>Walking</div>
+                    <div id="walking-text" class='toggle toggle--active-null toggle--null'>Walking</div>
                 </label>
                 <label class='toggle-container'>
                     <input id="cycling" name='profile' type='radio' value='cycling'>
-                    <div class='toggle toggle--active-null toggle--null'>Cycling</div>
+                    <div id="cycling-text" class='toggle toggle--active-null toggle--null'>Cycling</div>
                 </label>
                 <label class='toggle-container'>
                     <input id="driving" name='profile' type='radio' value='driving' checked>
-                    <div class='toggle toggle--active-null toggle--null'>Driving</div>
+                    <div id="driving-text" class='toggle toggle--active-null toggle--null'>Driving</div>
                 </label>
             </div>
         </form>
+        <br>
         <h3>Fire Station</h3>
         <p id='fireDesc'></p>
         <br>
